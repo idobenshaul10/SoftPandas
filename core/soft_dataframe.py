@@ -43,7 +43,6 @@ class SoftDataFrame(pd.DataFrame):
             raise ValueError(f"Model for data type '{data_type}' not found.")
 
         column_embeddings = np.stack(self[f"{col}_{data_type}_embeddings"])
-        import pdb; pdb.set_trace()
         similarity_scores = semantic_model.metric([query_embedding], column_embeddings).flatten()
         threshold = kwargs.get('threshold', semantic_model.threshold)
         mask = similarity_scores >= threshold

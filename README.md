@@ -1,3 +1,11 @@
+# SoftPandas
+
+### TODO:
+1. Add saving methods for SoftDataFrame
+2. Add dealing with Nans 
+
+### Example Usage:
+```commandline
 import pandas as pd
 from core.soft_dataframe import SoftDataFrame
 from embedders.clip_embedder import OpenClipEmbedder
@@ -18,7 +26,5 @@ df = SoftDataFrame(df, soft_columns={'NAME': 'text',
                    )
 
 df_filtered_image = df.soft_query("'IMAGE' ~= 'red and black swim shorts'")
-# df_filtered_desc = df.soft_query("'DESCRIPTION & COLOR' ~= 'red and black swim shorts'", inplace=False)
 relevant_price_items = df_filtered_image.query("PRICE < 600")
-
-import pdb; pdb.set_trace()
+```
