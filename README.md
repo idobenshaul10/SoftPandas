@@ -11,6 +11,7 @@
    
 
 ### Example Usage:
+1. Let's say we want to get all red and black swim shorts that cost less than 600$
 ```commandline
 import pandas as pd
 from core.soft_dataframe import SoftDataFrame
@@ -31,6 +32,6 @@ df = SoftDataFrame(df, soft_columns={'NAME': 'text',
                    models={"text": lang_model, "image": vision_model}
                    )
 
-df_filtered_image = df.soft_query("'IMAGE' ~= 'red and black swim shorts'")
-relevant_price_items = df_filtered_image.query("PRICE < 600")
+df = df.soft_query("'IMAGE' ~= 'red and black swim shorts'")
+relevant_items = df.query("PRICE < 600")
 ```

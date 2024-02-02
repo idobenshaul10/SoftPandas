@@ -2,6 +2,7 @@ from typing import List, Dict, Any
 import pandas as pd
 from tqdm import tqdm
 import numpy as np
+import pickle
 
 tqdm.pandas()
 
@@ -9,18 +10,45 @@ tqdm.pandas()
 class SoftDataFrame(pd.DataFrame):
     _metadata = ['soft_columns', 'models', 'hidden_columns']
 
+    # Constructor properties
+    @property
+    def _constructor(self):
+        return SoftDataFrame
+
+    @property
+    def _constructor_sliced(self):
+        # This returns a pd.Series by default. If you've created a custom Series class, return that instead.
+        return pd.Series
+
+    @property
+    def _constructor_expanddim(self):
+        # This is less commonly used but should return your custom class for operations
+        # that change the dimensionality of the data, for example pd.DataFrame.pivot
+        return SoftDataFrame
+
     def __init__(self, *args, soft_columns: List[Any] | Dict[Any, Any] = None,
                  models: Dict[str, Any] = None, reembed=True, **kwargs):
 
         super().__init__(*args, **kwargs)
+        self.models = models if models is not None else {}
+        self.hidden_columns = []
+
         if soft_columns:
             if isinstance(soft_columns, list):
                 self.soft_columns = {k: "text" for k in soft_columns}
-            self.soft_columns = soft_columns
-        self.models = models
-        self.hidden_columns = []
+            else:
+                self.soft_columns = soft_columns
+        else:
+            self.soft_columns = {}
+
         if reembed:
             self.embed_soft_columns()
+
+    def __finalize__(self, other, method=None, **kwargs):
+        for name in self._metadata:
+            object.__setattr__(self, name, getattr(other, name, None))
+        return self
+
 
     def embed_soft_columns(self):
         for col, data_type in self.soft_columns.items():
@@ -73,3 +101,6 @@ class SoftDataFrame(pd.DataFrame):
                                    models=self.models,
                                    reembed=False)
             return result
+
+    # def to_pickle(self, path: str) -> None:
+    #     pickle.dump(self, open(path, "rb"))
