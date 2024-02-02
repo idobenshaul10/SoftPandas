@@ -9,14 +9,14 @@ class Embedder(ABC):
         self.metric = metric
         self.threshold = threshold
 
-    def check_validity(self, text):
-        if not isinstance(text, str):
-            print(f"Expected a string, got {type(text)}")
+    def check_validity(self, data):
+        if not isinstance(data, str):
+            print(f"Expected a string, got {type(data)}")
             return False
         return True
 
     @abstractmethod
-    def encode(self, text):
+    def encode(self, data):
         pass
 
 
