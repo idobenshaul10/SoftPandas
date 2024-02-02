@@ -19,11 +19,13 @@ def load_image_from_url(url):
 
 
 class OpenClipEmbedder(Embedder):
-    def __init__(self, model_name, metric, threshold):
+    def __init__(self, model_name, metric, threshold, pretrained):
         super().__init__(model_name, metric, threshold)
         self.model, _, self.preprocess = open_clip.create_model_and_transforms(model_name,
-                                                                               pretrained='laion2b_s34b_b79k')
+                                                                               pretrained=pretrained)
         self.tokenizer = open_clip.get_tokenizer(model_name)
+        self.model.eval()
+        # self.metric = np.inner
 
     def encode(self, data):
         if not self.check_validity(data):
@@ -39,5 +41,6 @@ class OpenClipEmbedder(Embedder):
             data = self.tokenizer([data])
             embs = self.model.encode_text(data)
 
-        embs /= embs.norm(dim=-1, keepdim=True)
+        # embs /= embs.norm(dim=-1, keepdim=True)
+        embs = embs.detach().numpy().squeeze()
         return embs

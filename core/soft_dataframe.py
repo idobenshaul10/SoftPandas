@@ -7,19 +7,18 @@ tqdm.pandas()
 
 
 class SoftDataFrame(pd.DataFrame):
-    _metadata = ['soft_columns', 'language_model', 'vision_model']
+    _metadata = ['soft_columns', 'models', 'hidden_columns']
 
     def __init__(self, *args, soft_columns: List[Any] | Dict[Any, Any] = None,
-                 language_model=None, vision_model=None,
-                 reembed=True, **kwargs):
+                 models: Dict[str, Any] = None, reembed=True, **kwargs):
 
         super().__init__(*args, **kwargs)
         if soft_columns:
             if isinstance(soft_columns, list):
                 self.soft_columns = {k: "text" for k in soft_columns}
             self.soft_columns = soft_columns
-        self.language_model = language_model
-        self.vision_model = vision_model
+        self.models = models
+        self.hidden_columns = []
         if reembed:
             self.embed_soft_columns()
 
@@ -28,19 +27,25 @@ class SoftDataFrame(pd.DataFrame):
             new_column_name = f"{col}_{data_type}_embeddings"
             if new_column_name in self.columns:
                 continue
-            if data_type == "text":
-                self[new_column_name] = self[col].progress_apply(self.language_model.encode)
-            elif data_type == "image":
-                self[new_column_name] = self[col].progress_apply(self.vision_model.encode)
+            if data_type in self.models:
+                self[new_column_name] = self[col].progress_apply(self.models[data_type].encode)
             else:
-                raise ValueError(f"Data type '{data_type}' not supported for soft columns.")
+                raise ValueError(f"Model for data type '{data_type}' not found.")
+            self.hidden_columns.append(new_column_name)
 
     def similar_to(self, col: str, value: str, **kwargs):
         # TODO: Add support for nan values
-        query_embedding = self.language_model.encode(value)
-        column_embeddings = np.stack(self[f"{col}_text_embeddings"])
-        similarity_scores = self.language_model.metric([query_embedding], column_embeddings).flatten()
-        threshold = kwargs.get('threshold', self.language_model.threshold)
+        data_type = self.soft_columns[col]
+        if data_type in self.models:
+            semantic_model = self.models[data_type]
+            query_embedding = semantic_model.encode(value)
+        else:
+            raise ValueError(f"Model for data type '{data_type}' not found.")
+
+        column_embeddings = np.stack(self[f"{col}_{data_type}_embeddings"])
+        import pdb; pdb.set_trace()
+        similarity_scores = semantic_model.metric([query_embedding], column_embeddings).flatten()
+        threshold = kwargs.get('threshold', semantic_model.threshold)
         mask = similarity_scores >= threshold
         return mask
 
@@ -66,7 +71,6 @@ class SoftDataFrame(pd.DataFrame):
         else:
             result = SoftDataFrame(filtered_data,
                                    soft_columns=self.soft_columns,
-                                   language_model=self.language_model,
-                                   vision_model=self.vision_model,
+                                   models=self.models,
                                    reembed=False)
             return result
