@@ -3,6 +3,12 @@
 ### TODO:
 1. Add saving methods for SoftDataFrame
 2. Add dealing with Nans 
+3. Batching of initial encoding - 
+   - don't do it one by one
+   - use device (cuda, mps, tpu, etc.)
+4. make into a package
+   - requirements file 
+   
 
 ### Example Usage:
 ```commandline
