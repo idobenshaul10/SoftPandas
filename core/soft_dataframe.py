@@ -1,5 +1,4 @@
 import pandas as pd
-from embedders.embedder import SentenceTransformerEmbedder
 from tqdm import tqdm
 import numpy as np
 
@@ -28,6 +27,7 @@ class SoftDataFrame(pd.DataFrame):
             self[new_column_name] = self[col].progress_apply(self.language_model.encode)
 
     def similar_to(self, col: str, value: str, **kwargs):
+        # TODO: Add support for nan values
         query_embedding = self.language_model.encode(value)
         column_embeddings = np.stack(self[f"{col}_lang_embeddings"])
         similarity_scores = self.language_model.metric([query_embedding], column_embeddings).flatten()
@@ -36,13 +36,13 @@ class SoftDataFrame(pd.DataFrame):
         return mask
 
     def soft_query(self, expr: str, inplace: bool = False, **kwargs):
-        # Check for the presence of "~" for semantic similarity queries
+        # Check for the presence of "~=" for semantic similarity queries
         if '~=' not in expr:
             raise ValueError("Soft query must contain '~=' for semantic similarity.")
         else:
             col, value = expr.split('~=')
-            col = col.strip()
-            value = value.strip().strip('"').strip("'")  # Remove quotes and whitespace
+            col = col.strip().strip('"').strip("'")
+            value = value.strip().strip('"').strip("'")
 
             if col not in self.soft_columns:
                 raise ValueError(f"Semantic similarity query not supported for column '{col}'.")
