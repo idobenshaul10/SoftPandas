@@ -2,20 +2,26 @@ import pandas as pd
 from embedders.embedder import SentenceTransformerEmbedder
 from tqdm import tqdm
 import numpy as np
+
 tqdm.pandas()
 
 
 class SoftDataFrame(pd.DataFrame):
-    def __init__(self, *args, soft_columns=None, language_model=None, vision_model=None, **kwargs):
+    def __init__(self, *args, soft_columns=None, language_model=None, vision_model=None,
+                 reembed=True, **kwargs):
         super().__init__(*args, **kwargs)
         self.soft_columns = soft_columns if soft_columns is not None else []
         self.language_model = language_model
         self.vision_model = vision_model
-        self.embed_soft_columns()
+        if reembed:
+            self.embed_soft_columns()
 
     def embed_soft_columns(self):
         for col in self.soft_columns:
-            self[f"{col}_lang_embeddings"] = self[col].progress_apply(self.language_model.encode)
+            new_column_name = f"{col}_lang_embeddings"
+            if new_column_name in self.columns:
+                continue
+            self[new_column_name] = self[col].progress_apply(self.language_model.encode)
 
     def soft_query(self, expr: str, inplace: bool = False, **kwargs):
         # Check for the presence of "~" for semantic similarity queries
@@ -40,11 +46,15 @@ class SoftDataFrame(pd.DataFrame):
             mask = similarity_scores >= threshold
 
             # Use the boolean mask to filter the dataframe
-            filtered_df = self[mask]
+            filtered_data = self[mask]
 
         if inplace:
-            self._update_inplace(filtered_df)
+            self._update_inplace(filtered_data)
             return None
         else:
-            return filtered_df
-
+            result = SoftDataFrame(filtered_data,
+                                   soft_columns=self.soft_columns,
+                                   language_model=self.language_model,
+                                   vision_model=self.vision_model,
+                                   reembed=False)
+            return result
