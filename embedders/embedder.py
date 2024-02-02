@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from sentence_transformers import SentenceTransformer, CrossEncoder, util
 from typing import Callable
 import numpy as np
 
@@ -10,15 +9,15 @@ class Embedder(ABC):
         self.metric = metric
         self.threshold = threshold
 
+    def check_validity(self, text):
+        if not isinstance(text, str):
+            print(f"Expected a string, got {type(text)}")
+            return False
+        return True
+
     @abstractmethod
     def encode(self, text):
         pass
 
 
-class SentenceTransformerEmbedder(Embedder):
-    def __init__(self, model_name, metric, threshold):
-        super().__init__(model_name, metric, threshold)
-        self.model = SentenceTransformer(self.model_name)
 
-    def encode(self, text):
-        return self.model.encode(text)
