@@ -21,4 +21,5 @@ df_filtered_image = df.soft_query("'IMAGE' ~= 'red and black swim shorts'")
 # df_filtered_desc = df.soft_query("'DESCRIPTION & COLOR' ~= 'red and black swim shorts'", inplace=False)
 relevant_price_items = df_filtered_image.query("PRICE < 600")
 
-import pdb; pdb.set_trace()
+relevant_price_items.to_pickle("relevant_items_2.p")
+a = pd.read_pickle("relevant_items_2.p")
