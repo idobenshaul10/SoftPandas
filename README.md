@@ -6,42 +6,55 @@
 [//]: # (![GitHub Repo stars]&#40;https://img.shields.io/github/stars/idobenshaul10/SoftPandas?style=social&#41;)
 [![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/ml_norms)](https://twitter.com/ml_norms)
 
-### Example Usage:
-1. Let's say we want to get all red and black swim shorts that cost less than 600$
+## Description:
+SoftPandas is an initial package that allows you to work with pandas DataFrames and query them using semantic similarity.
+This allows you to have conditions which are soft (e.g. all products that are similar to "red and black swim shorts"). 
+Current version supports text and image data types, where if an image link is present, the image is downloaded and embedded using OpenClip.
+Currently supports: 
+1. Language Encoder Model: any model using SentenceTransformer
+2. MultiModal Encoder Model: any model using OpenClip
+querying at the moment is only done using a text query. 
 
-```python test.py```
+**This project is a work in progress! If you find any issues - please report them**
 
-Or play with this code:
+## Installation:
+Python version 3.10 or later installed.
+```pip install softpandas```
+
+## Example Usage:
+Let's say we want to get all red and black swim shorts that cost less than 600$:
+We can load example data from a csv file and then query it using SoftPandas:
+
+First let's set up our encoders:
 ```commandline
-import pandas as pd
-
-from core.data_types import InputDataType
-from core.soft_dataframe import SoftDataFrame
-from embedders.clip_embedder import OpenClipEmbedder
-from embedders.sentence_transformer_embedder import SentenceTransformerEmbedder
-from sklearn.metrics.pairwise import cosine_similarity
-
 lang_model = SentenceTransformerEmbedder('thenlper/gte-small',
                                 metric=cosine_similarity, threshold=0.82, device="cpu")
 
 
 vision_model = OpenClipEmbedder('ViT-B-32-256', metric=cosine_similarity,
                                 threshold=0.25, pretrained="datacomp_s34b_b86k")
+```
+Then let's query using soft + hard queries:
 
+```
 df = pd.read_csv("sample_data/men-swimwear.csv")
 df = SoftDataFrame(df, soft_columns={'NAME': InputDataType.text,
-                                     'DESCRIPTION & COLOR': InputDataType.text,
-                                     'FABRIC': InputDataType.text},
+                                     'DESCRIPTION & COLOR': InputDataType.text, 
+                                     'IMAGE': InputDataType.image},
                    models={InputDataType.text: lang_model, InputDataType.image: vision_model}
                    )
 
-relevant_price_items = df.query("PRICE < 600")
-df_filtered_desc = relevant_price_items.soft_query("'DESCRIPTION & COLOR' ~= 'red and black swim shorts'")
-df = df_filtered_desc.add_soft_columns({'IMAGE': InputDataType.image}, inplace=False)
-
-df_filtered_image = df.soft_query("'IMAGE' ~= 'red and black swim shorts'")
-print(df_filtered_image)
+df = df.soft_query("'DESCRIPTION & COLOR' ~= 'swim shorts'")
+df = df.soft_query("'IMAGE' ~= 'red and black'")
+df = df.query("PRICE < 600")
+print(df.head()['DESCRIPTION & COLOR'].values)
 ```
+
+For full script: 
+```python demo.py```
+
+Or play with this code:
+
 2. Saving and loading:
 ```commandline
 relevant_price_items.to_pickle("relevant_items.p")
@@ -49,7 +62,7 @@ a = pd.read_pickle("relevant_items.p")
 ```
 
 
-### TODO:
+### TODOs:
 1. ~~Add saving methods for SoftDataFrame~~
 2. ~~Method for adding new columns~~
 3. Add dealing with Nans
@@ -58,9 +71,7 @@ a = pd.read_pickle("relevant_items.p")
 4. Batching of initial encoding - 
    - don't do it one by one
    - ~~use device (cuda, mps, tpu, etc.)~~
-5. make into a package
-   - requirements file
-   - Add image
+
    
 ### Long Term Goals:
 1. Add automatic feature extraction from images into new columns
