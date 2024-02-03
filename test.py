@@ -7,7 +7,8 @@ from embedders.sentence_transformer_embedder import SentenceTransformerEmbedder
 from sklearn.metrics.pairwise import cosine_similarity
 
 lang_model = SentenceTransformerEmbedder('thenlper/gte-small',
-                                         metric=cosine_similarity, threshold=0.82, device="cpu")
+                                metric=cosine_similarity, threshold=0.82, device="cpu")
+
 
 vision_model = OpenClipEmbedder('ViT-B-32-256', metric=cosine_similarity,
                                 threshold=0.25, pretrained="datacomp_s34b_b86k")
