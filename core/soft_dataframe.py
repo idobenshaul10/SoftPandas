@@ -14,7 +14,6 @@ tqdm.pandas()
 class SoftDataFrame(pd.DataFrame):
     _metadata = ['soft_columns', 'models', 'hidden_columns']
 
-    # Constructor properties
     @property
     def _constructor(self):
         return SoftDataFrame
@@ -31,7 +30,7 @@ class SoftDataFrame(pd.DataFrame):
         return SoftDataFrame
 
     def __init__(self, *args, soft_columns: List[Any] | Dict[Any, InputDataType] = None,
-                 models: Dict[InputDataType, Any] = None, reembed=True, **kwargs):
+                 models: Dict[InputDataType, Any] = None, reembed: bool = True, **kwargs):
 
         super().__init__(*args, **kwargs)
         self.models = models if models is not None else {}
@@ -40,7 +39,7 @@ class SoftDataFrame(pd.DataFrame):
         if soft_columns:
             if isinstance(soft_columns, list):
                 self.soft_columns = {k: InputDataType.text for k in soft_columns}
-            else:
+            elif isinstance(soft_columns, dict):
                 self.soft_columns = soft_columns
         else:
             self.soft_columns = {}
@@ -60,12 +59,18 @@ class SoftDataFrame(pd.DataFrame):
         if col not in self.columns:
             raise ValueError(f"Column '{col}' not found in DataFrame.")
         if data_type in self.models:
-            self[new_column_name] = self[col].progress_apply(self.models[data_type].encode)
+            self.loc[:, new_column_name] = self[col].progress_apply(self.models[data_type].encode)
+
         else:
             raise ValueError(f"Model for data type '{data_type}' not found.")
         # self.hidden_columns.add(new_column_name)
 
     def add_soft_columns(self, new_columns: Dict[str, InputDataType], inplace: bool = True) -> SoftDataFrame | None:
+        if not inplace:
+            new_self = self.copy()
+        else:
+            new_self = self
+
         for col, data_type in new_columns.items():
             new_column_name = f"{col}_{data_type.name}_embeddings"
             semantic_col_exists = False
@@ -77,10 +82,10 @@ class SoftDataFrame(pd.DataFrame):
             if semantic_col_exists:
                 warnings.warn(f"Semantic column for '{col}' already exists: {self.soft_columns[col]}, skipping column.")
                 continue
-            self.embed_soft_column(data_type, col, new_column_name)
-            self.soft_columns[col] = data_type
+            new_self.embed_soft_column(data_type, col, new_column_name)
+            new_self.soft_columns[col] = data_type
         if not inplace:
-            return self
+            return new_self
 
     def similar_to(self, col: str, value: str, **kwargs) -> np.ndarray:
         # TODO: Add support for nan values
