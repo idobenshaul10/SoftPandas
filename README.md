@@ -13,7 +13,8 @@ Current version supports text and image data types, where if an image link is pr
 Currently supports: 
 1. Language Encoder Model: any model using SentenceTransformer
 2. MultiModal Encoder Model: any model using OpenClip
-querying at the moment is only done using a text query. 
+
+Querying at the moment is only done using a text query. 
 
 **This project is a work in progress! If you find any issues - please report them**
 
