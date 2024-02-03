@@ -1,19 +1,10 @@
-# SoftPandas
+# SoftPandas - Semantic Querying for Pandas
 
-### TODO:
-1. ~~Add saving methods for SoftDataFrame~~
-2. ~~Method for adding new columns~~
-3. Add dealing with Nans 
-4. Batching of initial encoding - 
-   - don't do it one by one
-   - use device (cuda, mps, tpu, etc.)
-5. make into a package
-   - requirements file 
-   
-### Long Term Goals:
-1. Add automatic feature extraction from images into new columns
-   - allows hard querying using visual data!
-2. Add ability to soft query based on Image
+
+<img src="soft_panda_logo.png" alt="SoftPandas" title="Logo" width="450">
+
+[//]: # (![GitHub Repo stars]&#40;https://img.shields.io/github/stars/idobenshaul10/SoftPandas?style=social&#41;)
+[![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/ml_norms)](https://twitter.com/ml_norms)
 
 ### Example Usage:
 1. Let's say we want to get all red and black swim shorts that cost less than 600$
@@ -56,3 +47,23 @@ print(df_filtered_image)
 relevant_price_items.to_pickle("relevant_items.p")
 a = pd.read_pickle("relevant_items.p")
 ```
+
+
+### TODO:
+1. ~~Add saving methods for SoftDataFrame~~
+2. ~~Method for adding new columns~~
+3. Add dealing with Nans
+   - ~~if a column is Nan, just ignore it~~
+   - If value isn't there, it shouldn't pass condition - similar to normal querying
+4. Batching of initial encoding - 
+   - don't do it one by one
+   - ~~use device (cuda, mps, tpu, etc.)~~
+5. make into a package
+   - requirements file
+   - Add image
+   
+### Long Term Goals:
+1. Add automatic feature extraction from images into new columns
+   - allows hard querying using visual data!
+2. Add ability to soft query based on Image
+3. Expand to more modalities
