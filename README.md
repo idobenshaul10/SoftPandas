@@ -2,7 +2,7 @@
 
 ### TODO:
 1. ~~Add saving methods for SoftDataFrame~~
-2. Method for adding new columns
+2. ~~Method for adding new columns~~
 3. Add dealing with Nans 
 4. Batching of initial encoding - 
    - don't do it one by one
@@ -10,6 +10,10 @@
 5. make into a package
    - requirements file 
    
+### Long Term Goals:
+1. Add automatic feature extraction from images into new columns
+   - allows hard querying using visual data!
+2. Add ability to soft query based on Image
 
 ### Example Usage:
 1. Let's say we want to get all red and black swim shorts that cost less than 600$
