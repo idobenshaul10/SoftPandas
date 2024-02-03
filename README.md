@@ -1,4 +1,4 @@
-# SoftPandas - Semantic Querying for Pandas
+# SoftPandas - Pandas with Semantic Querying
 
 
 <img src="soft_panda_logo.png" alt="SoftPandas" title="Logo" width="450">
