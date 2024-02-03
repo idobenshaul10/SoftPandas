@@ -23,5 +23,7 @@ df = SoftDataFrame(df, soft_columns={'NAME': InputDataType.text,
 relevant_price_items = df.query("PRICE < 600")
 df_filtered_desc = relevant_price_items.soft_query("'DESCRIPTION & COLOR' ~= 'red and black swim shorts'")
 df = df_filtered_desc.add_soft_columns({'IMAGE': InputDataType.image}, inplace=False)
-# df.add_soft_columns({'IMAGE': InputDataType.text})
+
 df_filtered_image = df.soft_query("'IMAGE' ~= 'red and black swim shorts'")
+print(df_filtered_image)
+import pdb; pdb.set_trace()

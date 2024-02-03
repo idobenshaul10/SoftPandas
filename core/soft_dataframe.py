@@ -127,3 +127,15 @@ class SoftDataFrame(pd.DataFrame):
         else:
             return self
 
+    def __repr__(self):
+        emb_columns = [k for k in self.columns if k.endswith('_embeddings')]
+        temp_df = self.drop(columns=emb_columns, errors='ignore')
+        return pd.DataFrame.__repr__(temp_df)
+
+    def _repr_html_(self):
+        emb_columns = [k for k in self.columns if k.endswith('_embeddings')]
+        temp_df = self.drop(columns=emb_columns, errors='ignore')
+        regular_df = pd.DataFrame(temp_df)
+        return regular_df._repr_html_()
+
+
