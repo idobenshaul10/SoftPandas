@@ -72,6 +72,10 @@ class SoftDataFrame(pd.DataFrame):
             new_self = self
 
         for col, data_type in new_columns.items():
+            if self[col].isna().any():
+                # TODO: Add proper support for handling NaN values, at the moment we just skip the column
+                warnings.warn(f"Column '{col}' contains NaN values, skipping column.")
+                continue
             new_column_name = f"{col}_{data_type.name}_embeddings"
             semantic_col_exists = False
             for other_data_type in InputDataType._member_names_:
@@ -88,7 +92,6 @@ class SoftDataFrame(pd.DataFrame):
             return new_self
 
     def similar_to(self, col: str, value: str, **kwargs) -> np.ndarray:
-        # TODO: Add support for nan values
         data_type = self.soft_columns[col]
         if data_type in self.models:
             semantic_model = self.models[data_type]
