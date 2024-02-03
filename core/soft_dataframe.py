@@ -1,8 +1,10 @@
+from __future__ import annotations
 from typing import List, Dict, Any
 import pandas as pd
 from tqdm import tqdm
 import numpy as np
 import pickle
+
 
 tqdm.pandas()
 
@@ -31,7 +33,7 @@ class SoftDataFrame(pd.DataFrame):
 
         super().__init__(*args, **kwargs)
         self.models = models if models is not None else {}
-        self.hidden_columns = []
+        self.hidden_columns = set()
 
         if soft_columns:
             if isinstance(soft_columns, list):
@@ -42,26 +44,30 @@ class SoftDataFrame(pd.DataFrame):
             self.soft_columns = {}
 
         if reembed:
-            self.embed_soft_columns()
+            self.embed_soft_columns_init()
 
     def __finalize__(self, other, method=None, **kwargs):
         for name in self._metadata:
             object.__setattr__(self, name, getattr(other, name, None))
         return self
 
+    def embed_soft_column(self, data_type: str, col: str, new_column_name: str):
+        if col not in self.columns:
+            raise ValueError(f"Column '{col}' not found in DataFrame.")
+        if data_type in self.models:
+            self[new_column_name] = self[col].progress_apply(self.models[data_type].encode)
+        else:
+            raise ValueError(f"Model for data type '{data_type}' not found.")
+        self.hidden_columns.add(new_column_name)
 
-    def embed_soft_columns(self):
+    def embed_soft_columns_init(self):
         for col, data_type in self.soft_columns.items():
             new_column_name = f"{col}_{data_type}_embeddings"
             if new_column_name in self.columns:
                 continue
-            if data_type in self.models:
-                self[new_column_name] = self[col].progress_apply(self.models[data_type].encode)
-            else:
-                raise ValueError(f"Model for data type '{data_type}' not found.")
-            self.hidden_columns.append(new_column_name)
+            self.embed_soft_column(data_type, col, new_column_name)
 
-    def similar_to(self, col: str, value: str, **kwargs):
+    def similar_to(self, col: str, value: str, **kwargs) -> np.ndarray:
         # TODO: Add support for nan values
         data_type = self.soft_columns[col]
         if data_type in self.models:
@@ -76,7 +82,7 @@ class SoftDataFrame(pd.DataFrame):
         mask = similarity_scores >= threshold
         return mask
 
-    def soft_query(self, expr: str, inplace: bool = False, **kwargs):
+    def soft_query(self, expr: str, inplace: bool = False, **kwargs) -> SoftDataFrame | None:
         # Check for the presence of "~=" for semantic similarity queries
         if '~=' not in expr:
             raise ValueError("Soft query must contain '~=' for semantic similarity.")

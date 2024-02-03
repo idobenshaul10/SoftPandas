@@ -1,12 +1,13 @@
 # SoftPandas
 
 ### TODO:
-1. Add saving methods for SoftDataFrame
-2. Add dealing with Nans 
-3. Batching of initial encoding - 
+1. ~~Add saving methods for SoftDataFrame~~
+2. Method for adding new columns
+3. Add dealing with Nans 
+4. Batching of initial encoding - 
    - don't do it one by one
    - use device (cuda, mps, tpu, etc.)
-4. make into a package
+5. make into a package
    - requirements file 
    
 
@@ -34,4 +35,9 @@ df = SoftDataFrame(df, soft_columns={'NAME': 'text',
 
 df = df.soft_query("'IMAGE' ~= 'red and black swim shorts'")
 relevant_items = df.query("PRICE < 600")
+```
+2. Saving and loading:
+```commandline
+relevant_price_items.to_pickle("relevant_items.p")
+a = pd.read_pickle("relevant_items.p")
 ```
