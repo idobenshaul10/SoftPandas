@@ -3,8 +3,10 @@ from typing import List, Dict, Any
 import pandas as pd
 from tqdm import tqdm
 import numpy as np
+import warnings
 import pickle
 
+from core.data_types import InputDataType
 
 tqdm.pandas()
 
@@ -28,8 +30,8 @@ class SoftDataFrame(pd.DataFrame):
         # that change the dimensionality of the data, for example pd.DataFrame.pivot
         return SoftDataFrame
 
-    def __init__(self, *args, soft_columns: List[Any] | Dict[Any, Any] = None,
-                 models: Dict[str, Any] = None, reembed=True, **kwargs):
+    def __init__(self, *args, soft_columns: List[Any] | Dict[Any, InputDataType] = None,
+                 models: Dict[InputDataType, Any] = None, reembed=True, **kwargs):
 
         super().__init__(*args, **kwargs)
         self.models = models if models is not None else {}
@@ -37,7 +39,7 @@ class SoftDataFrame(pd.DataFrame):
 
         if soft_columns:
             if isinstance(soft_columns, list):
-                self.soft_columns = {k: "text" for k in soft_columns}
+                self.soft_columns = {k: InputDataType.text for k in soft_columns}
             else:
                 self.soft_columns = soft_columns
         else:
@@ -51,21 +53,37 @@ class SoftDataFrame(pd.DataFrame):
             object.__setattr__(self, name, getattr(other, name, None))
         return self
 
-    def embed_soft_column(self, data_type: str, col: str, new_column_name: str):
+    def embed_soft_columns_init(self) -> None:
+        self.add_soft_columns(self.soft_columns, inplace=True)
+
+    def embed_soft_column(self, data_type: InputDataType, col: str, new_column_name: str) -> None:
         if col not in self.columns:
             raise ValueError(f"Column '{col}' not found in DataFrame.")
         if data_type in self.models:
             self[new_column_name] = self[col].progress_apply(self.models[data_type].encode)
         else:
             raise ValueError(f"Model for data type '{data_type}' not found.")
-        self.hidden_columns.add(new_column_name)
+        # self.hidden_columns.add(new_column_name)
 
-    def embed_soft_columns_init(self):
-        for col, data_type in self.soft_columns.items():
-            new_column_name = f"{col}_{data_type}_embeddings"
-            if new_column_name in self.columns:
+    def add_soft_columns(self, new_columns: Dict[str, InputDataType], inplace: bool = True) -> SoftDataFrame | None:
+        for col, data_type in new_columns.items():
+            new_column_name = f"{col}_{data_type.name}_embeddings"
+            # if col in self.soft_columns and new_column_name in self.columns:
+            #     warnings.warn(f"Semantic column for '{col}' already exists: {self.soft_columns[col]}, skipping column.")
+            #     continue
+            semantic_col_exists = False
+            for other_data_type in InputDataType._member_names_:
+                check_column_name = f"{col}_{other_data_type}_embeddings"
+                if check_column_name in self.columns:
+                    semantic_col_exists = True
+                    break
+            if semantic_col_exists:
+                warnings.warn(f"Semantic column for '{col}' already exists: {self.soft_columns[col]}, skipping column.")
                 continue
             self.embed_soft_column(data_type, col, new_column_name)
+            self.soft_columns[col] = data_type
+        if not inplace:
+            return self
 
     def similar_to(self, col: str, value: str, **kwargs) -> np.ndarray:
         # TODO: Add support for nan values
@@ -76,7 +94,7 @@ class SoftDataFrame(pd.DataFrame):
         else:
             raise ValueError(f"Model for data type '{data_type}' not found.")
 
-        column_embeddings = np.stack(self[f"{col}_{data_type}_embeddings"])
+        column_embeddings = np.stack(self[f"{col}_{data_type.name}_embeddings"])
         similarity_scores = semantic_model.metric([query_embedding], column_embeddings).flatten()
         threshold = kwargs.get('threshold', semantic_model.threshold)
         mask = similarity_scores >= threshold
@@ -102,11 +120,10 @@ class SoftDataFrame(pd.DataFrame):
             self._update_inplace(filtered_data)
             return None
         else:
-            result = SoftDataFrame(filtered_data,
-                                   soft_columns=self.soft_columns,
-                                   models=self.models,
-                                   reembed=False)
-            return result
+            return self
+            # result = SoftDataFrame(filtered_data,
+            #                        soft_columns=self.soft_columns,
+            #                        models=self.models,
+            #                        reembed=False)
+            # return result
 
-    # def to_pickle(self, path: str) -> None:
-    #     pickle.dump(self, open(path, "rb"))
