@@ -7,7 +7,7 @@ from core.utils import get_device
 
 class Embedder(ABC):
     def __init__(self, model_name: str, metric: Callable[[np.array, np.array], float], threshold: float,
-                 device: str = None):
+                 device: str = None, **kwargs):
         self.model_name = model_name
         self.metric = metric
         self.threshold = threshold
@@ -15,6 +15,7 @@ class Embedder(ABC):
             self.device = torch.device(device)
         else:
             self.device = get_device()
+        self.kwargs = kwargs
 
     def check_validity(self, data):
         if not isinstance(data, str):
