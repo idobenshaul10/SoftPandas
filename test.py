@@ -15,7 +15,8 @@ vision_model = OpenClipEmbedder('ViT-B-32-256', metric=cosine_similarity,
 
 df = pd.read_csv("sample_data/men-swimwear.csv")
 df = SoftDataFrame(df, soft_columns={'NAME': InputDataType.text,
-                                     'DESCRIPTION & COLOR': InputDataType.text},
+                                     'DESCRIPTION & COLOR': InputDataType.text,
+                                     'FABRIC': InputDataType.text},
                    models={InputDataType.text: lang_model, InputDataType.image: vision_model}
                    )
 
