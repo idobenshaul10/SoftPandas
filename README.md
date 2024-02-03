@@ -14,12 +14,6 @@
 ### Example Usage:
 1. Let's say we want to get all red and black swim shorts that cost less than 600$
 ```commandline
-import pandas as pd
-from core.soft_dataframe import SoftDataFrame
-from embedders.clip_embedder import OpenClipEmbedder
-from embedders.sentence_transformer_embedder import SentenceTransformerEmbedder
-from sklearn.metrics.pairwise import cosine_similarity
-
 lang_model = SentenceTransformerEmbedder('thenlper/gte-small',
                                          metric=cosine_similarity, threshold=0.82)
 
@@ -33,8 +27,9 @@ df = SoftDataFrame(df, soft_columns={'NAME': 'text',
                    models={"text": lang_model, "image": vision_model}
                    )
 
-df = df.soft_query("'IMAGE' ~= 'red and black swim shorts'")
-relevant_items = df.query("PRICE < 600")
+df_filtered_image = df.soft_query("'IMAGE' ~= 'red and black swim shorts'")
+relevant_price_items = df_filtered_image.query("PRICE < 600")
+df_filtered_desc = relevant_price_items.soft_query("'DESCRIPTION & COLOR' ~= 'red and black swim shorts'")
 ```
 2. Saving and loading:
 ```commandline
