@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+preferred-citation:
+  type: software
+  message: If you use SoftPandas, please cite it as below.
+  authors:
+  - family-names: Ben-Shaul
+    given-names: Ido
+    orcid: "https://orcid.org/0000-0002-3954-035X"
+  title: "SoftPandas"
+  version: 0.01
+  doi: 10.5281/zenodo.3908559
+  date-released: 2024-02-03
+  license: Apache-2.0
+  url: "https://github.com/idobenshaul10/SoftPandas?tab=readme-ov-file"
