@@ -68,9 +68,6 @@ class SoftDataFrame(pd.DataFrame):
     def add_soft_columns(self, new_columns: Dict[str, InputDataType], inplace: bool = True) -> SoftDataFrame | None:
         for col, data_type in new_columns.items():
             new_column_name = f"{col}_{data_type.name}_embeddings"
-            # if col in self.soft_columns and new_column_name in self.columns:
-            #     warnings.warn(f"Semantic column for '{col}' already exists: {self.soft_columns[col]}, skipping column.")
-            #     continue
             semantic_col_exists = False
             for other_data_type in InputDataType._member_names_:
                 check_column_name = f"{col}_{other_data_type}_embeddings"
@@ -121,9 +118,4 @@ class SoftDataFrame(pd.DataFrame):
             return None
         else:
             return self
-            # result = SoftDataFrame(filtered_data,
-            #                        soft_columns=self.soft_columns,
-            #                        models=self.models,
-            #                        reembed=False)
-            # return result
 
