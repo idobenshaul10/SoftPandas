@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "softpandas"
+version = "0.13"
+authors = [
+    { name="Ido Ben-Shaul", email="ido.benshaul@gmail.com" }
+]
+description = "An easy to use semantic (soft) querying on pandas dataframes."
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.10"
+
+dependencies = [
+    "pandas",
+    "numpy",
+    "open-clip-torch",
+    "setuptools",
+    "argparse",
+    "sentence-transformers"
+]
+
+
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Environment :: Console",
+    "Programming Language :: Python :: 3.11"
+]
+
+keywords = ["Semantic Search", "Pandas", "Vector Database"]
+
+[project.urls]
+"Homepage" = "https://github.com/idobenshaul10/SoftPandas"
+"Issues" = "https://github.com/idobenshaul10/SoftPandas/issues"
+
+
+[tool.setuptools]
+packages = { find = { where = ["src"] } }
+zip-safe = false
+
