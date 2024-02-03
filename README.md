@@ -19,6 +19,7 @@ querying at the moment is only done using a text query.
 
 ## Installation:
 Python version 3.10 or later installed.
+
 ```pip install softpandas```
 
 ## Example Usage:
@@ -51,14 +52,13 @@ print(df.head()['DESCRIPTION & COLOR'].values)
 ```
 
 For full script: 
+
 ```python demo.py```
 
-Or play with this code:
-
-2. Saving and loading:
+### Saving and loading:
 ```commandline
-relevant_price_items.to_pickle("relevant_items.p")
-a = pd.read_pickle("relevant_items.p")
+df.to_pickle("relevant_items.p")
+df = pd.read_pickle("relevant_items.p")
 ```
 
 
