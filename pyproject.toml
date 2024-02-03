@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "softpandas"
-version = "0.13"
+version = "0.01"
 authors = [
     { name="Ido Ben-Shaul", email="ido.benshaul@gmail.com" }
 ]
