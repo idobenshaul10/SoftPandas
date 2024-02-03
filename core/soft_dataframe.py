@@ -106,7 +106,6 @@ class SoftDataFrame(pd.DataFrame):
         return mask
 
     def soft_query(self, expr: str, inplace: bool = False, **kwargs) -> SoftDataFrame | None:
-        # Check for the presence of "~=" for semantic similarity queries
         if '~=' not in expr:
             raise ValueError("Soft query must contain '~=' for semantic similarity.")
         else:
@@ -125,7 +124,11 @@ class SoftDataFrame(pd.DataFrame):
             self._update_inplace(filtered_data)
             return None
         else:
-            return self
+            result = SoftDataFrame(filtered_data,
+                                   soft_columns=self.soft_columns,
+                                   models=self.models,
+                                   reembed=False)
+            return result
 
     def __repr__(self):
         emb_columns = [k for k in self.columns if k.endswith('_embeddings')]
@@ -137,5 +140,3 @@ class SoftDataFrame(pd.DataFrame):
         temp_df = self.drop(columns=emb_columns, errors='ignore')
         regular_df = pd.DataFrame(temp_df)
         return regular_df._repr_html_()
-
-

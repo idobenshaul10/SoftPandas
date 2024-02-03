@@ -15,15 +15,14 @@ vision_model = OpenClipEmbedder('ViT-B-32-256', metric=cosine_similarity,
 
 df = pd.read_csv("sample_data/men-swimwear.csv")
 df = SoftDataFrame(df, soft_columns={'NAME': InputDataType.text,
-                                     'DESCRIPTION & COLOR': InputDataType.text,
-                                     'FABRIC': InputDataType.text},
+                                     'DESCRIPTION & COLOR': InputDataType.text},
+                                     # 'FABRIC': InputDataType.text},
                    models={InputDataType.text: lang_model, InputDataType.image: vision_model}
                    )
 
 relevant_price_items = df.query("PRICE < 600")
 df_filtered_desc = relevant_price_items.soft_query("'DESCRIPTION & COLOR' ~= 'red and black swim shorts'")
-df = df_filtered_desc.add_soft_columns({'IMAGE': InputDataType.image}, inplace=False)
-
-df_filtered_image = df.soft_query("'IMAGE' ~= 'red and black swim shorts'")
+df_filtered_desc = df_filtered_desc.add_soft_columns({'IMAGE': InputDataType.image}, inplace=False)
+df_filtered_image = df_filtered_desc.soft_query("'IMAGE' ~= 'red and black swim shorts'")
 print(df_filtered_image)
-import pdb; pdb.set_trace()
+
