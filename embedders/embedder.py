@@ -6,11 +6,15 @@ from core.utils import get_device
 
 
 class Embedder(ABC):
-    def __init__(self, model_name: str, metric: Callable[[np.array, np.array], float], threshold: float):
+    def __init__(self, model_name: str, metric: Callable[[np.array, np.array], float], threshold: float,
+                 device: str = None):
         self.model_name = model_name
         self.metric = metric
         self.threshold = threshold
-        self.device = torch.device("cpu")#get_device()
+        if device:
+            self.device = torch.device(device)
+        else:
+            self.device = get_device()
 
     def check_validity(self, data):
         if not isinstance(data, str):
