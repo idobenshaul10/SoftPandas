@@ -1,0 +1,6 @@
+pandas
+numpy
+open-clip-torch
+setuptools
+argparse
+sentence-transformers
