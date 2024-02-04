@@ -10,6 +10,7 @@ class SentenceTransformerEmbedder(Embedder):
         super().__init__(model_name, metric, threshold, device, **kwargs)
         self.model = SentenceTransformer(self.model_name,
                                          device=self.device, **self.kwargs)
+        self.embedding_size = self.model.get_sentence_embedding_dimension()
 
     def encode(self, data):
         if not self.check_validity(data):

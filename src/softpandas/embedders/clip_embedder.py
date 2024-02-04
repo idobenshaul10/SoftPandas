@@ -16,6 +16,7 @@ class OpenClipEmbedder(Embedder):
                                                                                device=self.device)
         self.tokenizer = open_clip.get_tokenizer(model_name)
         self.model.eval()
+        self.embedding_size = self.model.text_projection.shape[1]
 
     def encode(self, data):
         if not self.check_validity(data):

@@ -5,12 +5,15 @@ from tqdm import tqdm
 import numpy as np
 import warnings
 from softpandas.core.data_types import InputDataType
+import faiss
+from faiss import normalize_L2
+import time
 
 tqdm.pandas()
 
 
 class SoftDataFrame(pd.DataFrame):
-    _metadata = ['soft_columns', 'models', 'hidden_columns']
+    _metadata = ['soft_columns', 'models', 'indices', 'num_voronoi_clusters']
 
     @property
     def _constructor(self):
@@ -18,21 +21,25 @@ class SoftDataFrame(pd.DataFrame):
 
     @property
     def _constructor_sliced(self):
-        # This returns a pd.Series by default. If you've created a custom Series class, return that instead.
         return pd.Series
 
     @property
     def _constructor_expanddim(self):
-        # This is less commonly used but should return your custom class for operations
-        # that change the dimensionality of the data, for example pd.DataFrame.pivot
         return SoftDataFrame
 
     def __init__(self, *args, soft_columns: List[Any] | Dict[Any, InputDataType] = None,
-                 models: Dict[InputDataType, Any] = None, reembed: bool = True, **kwargs):
-
+                 models: Dict[InputDataType, Any] = None,
+                 reembed: bool = True,
+                 indices: Dict[str, faiss.Index] = None,
+                 num_voronoi_clusters=10,
+                 **kwargs):
         super().__init__(*args, **kwargs)
         self.models = models if models is not None else {}
-        self.hidden_columns = set()
+        if indices:
+            self.indices = indices
+        else:
+            self.indices = {}
+        self.num_voronoi_clusters = num_voronoi_clusters
 
         if soft_columns:
             if isinstance(soft_columns, list):
@@ -45,6 +52,8 @@ class SoftDataFrame(pd.DataFrame):
         if reembed:
             self.embed_soft_columns_init()
 
+
+
     def __finalize__(self, other, method=None, **kwargs):
         for name in self._metadata:
             object.__setattr__(self, name, getattr(other, name, None))
@@ -53,15 +62,34 @@ class SoftDataFrame(pd.DataFrame):
     def embed_soft_columns_init(self) -> None:
         self.add_soft_columns(self.soft_columns, inplace=True)
 
+    def create_new_index(self, col: str, data_type: InputDataType) -> None:
+        new_column_name = f"{col}_{data_type.name}"
+        model = self.models[data_type]
+        dim = model.embedding_size
+
+        if self.num_voronoi_clusters > 0:
+            quantizer = faiss.IndexFlatIP(dim)
+            index = faiss.IndexIVFFlat(quantizer, dim, self.num_voronoi_clusters, faiss.METRIC_INNER_PRODUCT)
+            index.nprobe = 10
+        else:
+            index = faiss.IndexFlatIP(dim)
+
+        embeddings = np.array(self[col].progress_apply(self.models[data_type].encode).tolist())
+        normalize_L2(embeddings)
+
+        if not index.is_trained:
+            index.train(embeddings)
+        index.add(embeddings)
+        self.indices[new_column_name] = index
+
     def embed_soft_column(self, data_type: InputDataType, col: str, new_column_name: str) -> None:
         if col not in self.columns:
             raise ValueError(f"Column '{col}' not found in DataFrame.")
         if data_type in self.models:
-            self.loc[:, new_column_name] = self[col].progress_apply(self.models[data_type].encode)
-
+            self.create_new_index(col, data_type)
+            # self.loc[:, new_column_name] = self[col].progress_apply(self.models[data_type].encode)
         else:
             raise ValueError(f"Model for data type '{data_type}' not found.")
-        # self.hidden_columns.add(new_column_name)
 
     def add_soft_columns(self, new_columns: Dict[str, InputDataType], inplace: bool = True) -> SoftDataFrame | None:
         if not inplace:
@@ -74,11 +102,13 @@ class SoftDataFrame(pd.DataFrame):
                 # TODO: Add proper support for handling NaN values, at the moment we just skip the column
                 warnings.warn(f"Column '{col}' contains NaN values, skipping column.")
                 continue
-            new_column_name = f"{col}_{data_type.name}_embeddings"
+
+            new_column_name = f"{col}_{data_type.name}"
+
             semantic_col_exists = False
             for other_data_type in InputDataType._member_names_:
-                check_column_name = f"{col}_{other_data_type}_embeddings"
-                if check_column_name in self.columns:
+                check_column_name = f"{col}_{other_data_type}"
+                if check_column_name in self.indices:
                     semantic_col_exists = True
                     break
             if semantic_col_exists:
@@ -93,15 +123,29 @@ class SoftDataFrame(pd.DataFrame):
         data_type = self.soft_columns[col]
         if data_type in self.models:
             semantic_model = self.models[data_type]
-            query_embedding = semantic_model.encode(value)
+            query_embedding = np.expand_dims(semantic_model.encode(value), 0)
+            normalize_L2(query_embedding)
         else:
             raise ValueError(f"Model for data type '{data_type}' not found.")
 
-        column_embeddings = np.stack(self[f"{col}_{data_type.name}_embeddings"])
-        similarity_scores = semantic_model.metric([query_embedding], column_embeddings).flatten()
+        index = self.indices[f"{col}_{data_type.name}"]
+        start = time.time()
+        similarity_scores, I = self.indices[f"{col}_{data_type.name}"].search(query_embedding, index.ntotal)
+        end = time.time()
+        print(f"time for search: {end - start} seconds")
+
         threshold = kwargs.get('threshold', semantic_model.threshold)
-        mask = similarity_scores >= threshold
+        mask = similarity_scores[0] >= threshold
         return mask
+
+    def update_indices(self, mask: np.ndarray) -> None:
+        ids_to_remove = np.where(mask == False)[0]
+        ids_to_remove = np.ascontiguousarray(ids_to_remove, dtype=np.int64)
+        for name, index in self.indices.items():
+            print(f"before: {index.ntotal}, mask:{mask.sum()}")
+            id_selector = faiss.IDSelectorBatch(ids_to_remove)
+            index.remove_ids(id_selector)
+            print(f"after: {index.ntotal}")
 
     def soft_query(self, expr: str, inplace: bool = False, **kwargs) -> SoftDataFrame | None:
         if '~=' not in expr:
@@ -122,10 +166,13 @@ class SoftDataFrame(pd.DataFrame):
             self._update_inplace(filtered_data)
             return None
         else:
+            self.update_indices(mask)
             result = SoftDataFrame(filtered_data,
                                    soft_columns=self.soft_columns,
                                    models=self.models,
-                                   reembed=False)
+                                   reembed=False,
+                                   indices=self.indices)
+
             return result
 
     def __repr__(self):
