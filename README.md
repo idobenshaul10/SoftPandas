@@ -17,9 +17,9 @@ Currently supports:
 Querying at the moment is only done using a text query. 
 
 **This project is a work in progress! If you find any issues - please report them**
-
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
 ## Installation:
-Python version 3.10 or later installed.
+Python version 3.10 or later installed. 
 
 ```pip install softpandas```
 
@@ -27,7 +27,21 @@ Python version 3.10 or later installed.
 Let's say we want to get all red and black swim shorts that cost less than 600$:
 We can load example data from a csv file and then query it using SoftPandas:
 
-First let's set up our encoders:
+For full script:
+
+```python demo.py```
+
+Imports:
+```
+import pandas as pd
+from softpandas.core.data_types import InputDataType
+from softpandas.core.soft_dataframe import SoftDataFrame
+from softpandas.embedders.clip_embedder import OpenClipEmbedder
+from softpandas.embedders.sentence_transformer_embedder import SentenceTransformerEmbedder
+from sklearn.metrics.pairwise import cosine_similarity
+```
+
+Let's set up our encoders:
 ```commandline
 lang_model = SentenceTransformerEmbedder('thenlper/gte-small',
                                 metric=cosine_similarity, threshold=0.82, device="cpu")
@@ -52,11 +66,10 @@ df = df.query("PRICE < 600")
 print(df.head()['DESCRIPTION & COLOR'].values)
 ```
 
-For full script: 
 
-```python demo.py```
 
 ### Saving and loading:
+
 ```commandline
 df.to_pickle("relevant_items.p")
 df = pd.read_pickle("relevant_items.p")
@@ -69,7 +82,8 @@ df = pd.read_pickle("relevant_items.p")
 3. Add dealing with Nans
    - ~~if a column is Nan, just ignore it~~
    - If value isn't there, it shouldn't pass condition - similar to normal querying
-4. Batching of initial encoding - 
+4. Add handling of multiple queries - ATM if it's more than one predicate, it'll crash.
+5. Batching of initial encoding - 
    - don't do it one by one
    - ~~use device (cuda, mps, tpu, etc.)~~
 
