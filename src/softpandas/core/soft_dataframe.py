@@ -36,7 +36,7 @@ class SoftDataFrame(pd.DataFrame):
         super().__init__(*args, **kwargs)
         self.models = models if models is not None else {}
         if indices:
-            self.indices = indices
+            self.indices = {k: faiss.clone_index(v) for k, v in indices.items()}
         else:
             self.indices = {}
         self.num_voronoi_clusters = num_voronoi_clusters
@@ -162,17 +162,18 @@ class SoftDataFrame(pd.DataFrame):
             mask = self.similar_to(col=col, value=value, **kwargs)
             filtered_data = self[mask]
 
+
         if inplace:
+            self.update_indices(mask)
             self._update_inplace(filtered_data)
             return None
         else:
-            self.update_indices(mask)
             result = SoftDataFrame(filtered_data,
                                    soft_columns=self.soft_columns,
                                    models=self.models,
                                    reembed=False,
                                    indices=self.indices)
-
+            result.update_indices(mask)
             return result
 
     def __repr__(self):

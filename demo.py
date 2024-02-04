@@ -23,8 +23,9 @@ df = SoftDataFrame(df, soft_columns={'NAME': InputDataType.text,
 # df = df.add_soft_columns({'IMAGE': InputDataType.image}, inplace=False)
 
 df.soft_query("'DESCRIPTION & COLOR' ~= 'swim shorts'", threshold=0.85)
-import pdb; pdb.set_trace()
+
 df = df.soft_query("'DESCRIPTION & COLOR' ~= 'swim shorts'", threshold=0.85)
+import pdb; pdb.set_trace()
 
 df.soft_query("'IMAGE' ~= 'swim shorts'", threshold=0.15)
 
