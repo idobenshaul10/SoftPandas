@@ -23,6 +23,11 @@ Python version 3.10 or later installed.
 
 ```pip install softpandas```
 
+You can also install the latest version from the GitHub repository:
+
+```pip install git+https://github.com/idobenshaul10/SoftPandas.git```
+
+
 ## Example Usage:
 Let's say we want to get all red and black swim shorts that cost less than 600$:
 We can load example data from a csv file and then query it using SoftPandas:
@@ -83,7 +88,8 @@ df = pd.read_pickle("relevant_items.p")
    - ~~if a column is Nan, just ignore it~~
    - If value isn't there, it shouldn't pass condition - similar to normal querying
 4. Add handling of multiple queries - ATM if it's more than one predicate, it'll crash.
-5. Batching of initial encoding - 
+5. Add indices instead of cosine - it's too slow 
+6. Batching of initial encoding - 
    - don't do it one by one
    - ~~use device (cuda, mps, tpu, etc.)~~
 
