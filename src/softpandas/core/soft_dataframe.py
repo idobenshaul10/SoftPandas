@@ -52,8 +52,6 @@ class SoftDataFrame(pd.DataFrame):
         if reembed:
             self.embed_soft_columns_init()
 
-
-
     def __finalize__(self, other, method=None, **kwargs):
         for name in self._metadata:
             object.__setattr__(self, name, getattr(other, name, None))
@@ -132,7 +130,7 @@ class SoftDataFrame(pd.DataFrame):
         start = time.time()
         similarity_scores, I = self.indices[f"{col}_{data_type.name}"].search(query_embedding, index.ntotal)
         end = time.time()
-        print(f"time for search: {end - start} seconds")
+        print(f"time for search: {end - start:.4f} seconds")
 
         threshold = kwargs.get('threshold', semantic_model.threshold)
         mask = similarity_scores[0] >= threshold
@@ -142,10 +140,8 @@ class SoftDataFrame(pd.DataFrame):
         ids_to_remove = np.where(mask == False)[0]
         ids_to_remove = np.ascontiguousarray(ids_to_remove, dtype=np.int64)
         for name, index in self.indices.items():
-            print(f"before: {index.ntotal}, mask:{mask.sum()}")
             id_selector = faiss.IDSelectorBatch(ids_to_remove)
             index.remove_ids(id_selector)
-            print(f"after: {index.ntotal}")
 
     def soft_query(self, expr: str, inplace: bool = False, **kwargs) -> SoftDataFrame | None:
         if '~=' not in expr:
@@ -161,7 +157,6 @@ class SoftDataFrame(pd.DataFrame):
 
             mask = self.similar_to(col=col, value=value, **kwargs)
             filtered_data = self[mask]
-
 
         if inplace:
             self.update_indices(mask)

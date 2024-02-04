@@ -23,9 +23,9 @@ Python version 3.10 or later installed.
 
 ```pip install softpandas```
 
-You can also install the latest version from the GitHub repository:
+You can also install the latest version from the GitHub repository (this version uses faiss indexing):
 
-```pip install git+https://github.com/idobenshaul10/SoftPandas.git```
+```pip install git+https://github.com/idobenshaul10/SoftPandas.git@indexing```
 
 
 ## Example Usage:
