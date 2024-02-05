@@ -36,7 +36,7 @@ We can load example data from a csv file and then query it using SoftPandas:
 
 For full script:
 
-```python demo.py```
+```demo.ipynb```
 
 Imports:
 ```
@@ -51,11 +51,11 @@ from sklearn.metrics.pairwise import cosine_similarity
 Let's set up our encoders:
 ```commandline
 lang_model = SentenceTransformerEmbedder('thenlper/gte-small',
-                                metric=cosine_similarity, threshold=0.82, device="cpu")
+                                metric=cosine_similarity, threshold=0.8, device="cpu")
 
 
 vision_model = OpenClipEmbedder('ViT-B-32-256', metric=cosine_similarity,
-                                threshold=0.25, pretrained="datacomp_s34b_b86k")
+                                threshold=0.22, pretrained="datacomp_s34b_b86k")
 ```
 Then let's query using soft + hard queries:
 
