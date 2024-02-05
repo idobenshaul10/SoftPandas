@@ -107,6 +107,9 @@ class SoftDataFrame(pd.DataFrame):
         if '~=' not in expr:
             raise ValueError("Soft query must contain '~=' for semantic similarity.")
         else:
+            split_arr = expr.split('~=')
+            if len(split_arr) != 2:
+                raise ValueError("Soft query must contain only one '~=' for semantic similarity.")
             col, value = expr.split('~=')
             col = col.strip().strip('"').strip("'")
             value = value.strip().strip('"').strip("'")
