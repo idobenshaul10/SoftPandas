@@ -29,6 +29,9 @@ Python version 3.10 or later installed. Latest version from the GitHub repositor
 
 ```pip install git+https://github.com/idobenshaul10/SoftPandas.git```
 
+and requirements:
+
+```pip install -r requirements.txt```
 
 ## Example Usage:
 Let's say we want to get all red and black swim shorts that cost less than 600$:
