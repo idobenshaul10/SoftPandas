@@ -18,11 +18,8 @@ class OpenClipEmbedder(Embedder):
         self.model.eval()
 
     def encode(self, data):
-        if not self.check_validity(data):
-            return np.nan
-
         with torch.no_grad():
-            if is_url(data) or type(data) == Image:
+            if isinstance(data, Image.Image) or is_url(data):
                 if is_url(data):
                     data = load_image_from_url(data)
                 data = self.preprocess(data).unsqueeze(0).to(self.device)
