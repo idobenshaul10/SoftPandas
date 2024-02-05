@@ -19,11 +19,10 @@ Querying at the moment is only done using a text query.
 **This project is a work in progress! If you find any issues - please report them**
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
 ## Installation:
-Python version 3.10 or later installed. 
+Python version 3.10 or later installed. Latest version from the GitHub repository:
 
-```pip install softpandas```
-
-You can also install the latest version from the GitHub repository:
+[//]: # ()
+[//]: # (```pip install softpandas```)
 
 ```pip install git+https://github.com/idobenshaul10/SoftPandas.git```
 
