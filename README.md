@@ -1,10 +1,13 @@
 # SoftPandas - Pandas with Semantic Querying
 
 
-<img src="soft_panda_logo.png" alt="SoftPandas" title="Logo" width="450">
+<img src="soft_panda_logo.png" alt="SoftPandas" title="Logo" width="350">
 
 [//]: # (![GitHub Repo stars]&#40;https://img.shields.io/github/stars/idobenshaul10/SoftPandas?style=social&#41;)
 [![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/ml_norms)](https://twitter.com/ml_norms)
+
+https://github.com/idobenshaul10/SoftPandas/assets/41121256/82c467b7-701a-4cfd-9277-df7b63a66330
+
 
 ## Description:
 SoftPandas is an initial package that allows you to work with pandas DataFrames and query them using semantic similarity.
